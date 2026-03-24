@@ -1,9 +1,24 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiInstance: GoogleGenAI | null = null;
+
+function getAI() {
+  if (!aiInstance) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.warn("GEMINI_API_KEY is missing. Using fallback data.");
+      return null;
+    }
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+}
 
 export async function getBusinessDetails() {
   try {
+    const ai = getAI();
+    if (!ai) throw new Error("AI SDK not initialized");
+
     console.log("Calling Gemini API with Google Maps grounding...");
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",

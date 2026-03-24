@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import * as React from 'react';
+import { useState, useEffect, ErrorInfo, ReactNode } from 'react';
 import { 
   Menu, X, Moon, Sun, Instagram, Facebook, Twitter, Phone, Mail, MapPin, Clock, 
   ChevronRight, Star, ArrowRight, Utensils, Info, Image as ImageIcon, MessageSquare
@@ -422,7 +423,7 @@ const Contact = ({ contact, mapsLinks }: { contact: any, mapsLinks: any[] }) => 
                   <h4 className="font-bold mb-1">Opening Hours</h4>
                   {typeof contact.hours === 'string' ? (
                     <p className="text-zinc-500">{contact.hours}</p>
-                  ) : (
+                  ) : contact.hours ? (
                     <div className="text-zinc-500 text-sm space-y-1">
                       {Object.entries(contact.hours).map(([day, time]) => (
                         <div key={day} className="flex justify-between gap-4">
@@ -431,6 +432,8 @@ const Contact = ({ contact, mapsLinks }: { contact: any, mapsLinks: any[] }) => 
                         </div>
                       ))}
                     </div>
+                  ) : (
+                    <p className="text-zinc-500">Hours not available</p>
                   )}
                 </div>
               </div>
@@ -482,7 +485,55 @@ const Footer = () => {
   );
 };
 
+class ErrorBoundary extends React.Component<any, any> {
+  state = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-4">
+          <div className="max-w-md w-full bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-xl border border-zinc-200 dark:border-zinc-800">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4 text-center">Something went wrong</h2>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-6 text-center">
+              The application encountered an error and could not render.
+            </p>
+            <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl mb-6 overflow-auto max-h-40">
+              <code className="text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap">
+                {(this.state.error as any)?.stack || (this.state.error as any)?.message}
+              </code>
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-3 rounded-full font-bold hover:opacity-90 transition-opacity"
+            >
+              Reload Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (this as any).props.children;
+  }
+}
+
 export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
+  );
+}
+
+function AppContent() {
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [businessData, setBusinessData] = useState({
@@ -556,11 +607,7 @@ export default function App() {
   if (loading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-white dark:bg-zinc-950">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 border-4 border-zinc-200 dark:border-zinc-800 border-t-zinc-900 dark:border-t-white rounded-full"
-        />
+        <div className="w-12 h-12 border-4 border-zinc-200 dark:border-zinc-800 border-t-zinc-900 dark:border-t-white rounded-full animate-spin" />
       </div>
     );
   }
