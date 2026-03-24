@@ -1,0 +1,5 @@
+{
+  "name": "Jacks - Premium Fast Food in Hidd",
+  "description": "Experience the best fast food in Hidd. Jacks offers a modern dining experience with high-quality ingredients and a premium atmosphere.",
+  "requestFramePermissions": ["geolocation"]
+}
